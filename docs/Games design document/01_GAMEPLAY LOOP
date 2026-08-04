@@ -1,0 +1,314 @@
+# 🎮 GAMEPLAY LOOP
+# Used Phone Shop Tycoon
+
+Version: 1.0
+
+Status: Core Design
+
+---
+
+# Overview
+
+The Gameplay Loop defines the core player experience.
+
+Every gameplay system must support this loop.
+
+No feature should bypass or replace the Core Loop.
+
+---
+
+# Primary Gameplay Loop
+
+```
+Start Day
+      │
+      ▼
+Call Customer
+      │
+      ▼
+Customer Arrives
+      │
+      ▼
+Inspect Phone
+      │
+      ▼
+Evaluate Device
+      │
+      ▼
+Negotiate Purchase Price
+      │
+      ▼
+Purchase Device
+      │
+      ▼
+Store in Inventory
+      │
+      ▼
+Repair Device
+      │
+      ▼
+Store Repaired Device
+      │
+      ▼
+Wait for Buyer
+      │
+      ▼
+Buyer Arrives
+      │
+      ▼
+Set Selling Price
+      │
+      ▼
+Negotiate Selling Price
+      │
+      ▼
+Complete Sale
+      │
+      ▼
+Generate Receipt
+      │
+      ▼
+Update Economy
+      │
+      ▼
+Update Reputation
+      │
+      ▼
+Repeat
+      │
+      ▼
+End Day
+```
+
+---
+
+# Player Decisions
+
+The player should continuously make meaningful decisions.
+
+Buying
+
+- Buy
+- Reject
+- Negotiate
+
+Repair
+
+- Repair
+- Sell As-Is
+
+Selling
+
+- Selling Price
+- Accept Offer
+- Reject Offer
+- Counter Offer
+
+Business
+
+- Spend Money
+- Save Money
+- Upgrade Shop
+
+---
+
+# Core Gameplay Pillars
+
+## Buying
+
+Acquire valuable devices at the best possible price.
+
+---
+
+## Repairing
+
+Increase device value by investing repair costs.
+
+---
+
+## Selling
+
+Maximize profit through smart pricing and negotiation.
+
+---
+
+## Business Growth
+
+Use profit to expand the business.
+
+---
+
+# Core Resources
+
+Money
+
+Used to
+
+- Purchase phones
+- Repair devices
+- Upgrade business
+
+---
+
+Inventory
+
+Stores all owned devices.
+
+---
+
+Reputation
+
+Represents customer trust.
+
+Higher reputation results in
+
+- Better customers
+- Easier negotiations
+- Higher selling prices
+
+---
+
+Time
+
+Measured in Days.
+
+Each day
+
+- Customers arrive
+- Transactions occur
+- Daily summary generated
+
+---
+
+# Success Loop
+
+```
+Better Negotiation
+
+↓
+
+Lower Purchase Cost
+
+↓
+
+Higher Profit
+
+↓
+
+More Cash
+
+↓
+
+Better Shop
+
+↓
+
+Better Reputation
+
+↓
+
+Better Customers
+
+↓
+
+Higher Value Phones
+
+↓
+
+Repeat
+```
+
+---
+
+# Failure Loop
+
+```
+Poor Negotiation
+
+↓
+
+Expensive Purchase
+
+↓
+
+Low Profit
+
+↓
+
+Less Cash
+
+↓
+
+Unable to Buy Phones
+
+↓
+
+Slow Progress
+```
+
+---
+
+# Design Principles
+
+The Gameplay Loop should be
+
+- Simple to understand
+- Deep to master
+- Rewarding
+- Repeatable
+- Expandable
+
+---
+
+# Expansion Rules
+
+Future systems must integrate into the existing Gameplay Loop.
+
+Examples
+
+Pawn Shop
+
+↓
+
+Acquire Devices
+
+Auction
+
+↓
+
+Acquire Devices
+
+Trade-In
+
+↓
+
+Acquire Devices
+
+Employee
+
+↓
+
+Improve Existing Steps
+
+Competitor
+
+↓
+
+Influences Economy
+
+No feature should bypass the Core Loop.
+
+---
+
+# Final Principle
+
+Every minute spent by the player should contribute to one of the following:
+
+- Buying Better
+- Repairing Better
+- Selling Better
+- Growing the Business
+
+If a feature does not improve one of these four areas,
+
+it should not be added.
