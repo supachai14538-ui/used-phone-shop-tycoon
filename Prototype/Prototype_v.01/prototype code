@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ร้านมือถือป้าแดง — Used Phone Shop Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+Thai:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22201B;
+    --paper:#FBF3E3;
+    --counter:#1B4B43;
+    --counter-dark:#12332D;
+    --gold:#E8A33D;
+    --coral:#D65A46;
+    --mint:#7FB69E;
+    --steel:#5C6B6A;
+    --paper-edge: 0 2px 0 rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased;}
+  html,body{margin:0; padding:0;}
+  body{
+    background: var(--counter-dark);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 0, transparent 40%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 24px);
+    font-family:'Noto Sans Thai', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px 12px 60px;
+  }
+  .marquee{
+    font-family:'Press Start 2P', monospace;
+    color:var(--gold);
+    font-size:13px;
+    text-align:center;
+    letter-spacing:1px;
+    margin:6px 0 4px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  }
+  .subhead{
+    color:#CBEAE0;
+    font-size:12px;
+    text-align:center;
+    margin-bottom:18px;
+    opacity:0.7;
+  }
+  .app{
+    width:100%;
+    max-width:980px;
+    display:grid;
+    grid-template-columns: 1fr 260px;
+    gap:16px;
+  }
+  @media (max-width:760px){
+    .app{grid-template-columns: 1fr;}
+  }
+  .panel{
+    background:var(--paper);
+    border:3px solid var(--ink);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.35);
+    padding:18px;
+    position:relative;
+  }
+  .panel-title{
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin:0 0 14px;
+    padding-bottom:10px;
+    border-bottom:2px dashed var(--ink);
+    color:var(--counter);
+  }
+
+  /* STATS SIDEBAR */
+  .stats-grid{display:flex; flex-direction:column; gap:10px;}
+  .stat-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'Space Mono', monospace;
+    border-bottom:1px dotted rgba(0,0,0,0.25);
+    padding-bottom:6px;
+  }
+  .stat-label{font-size:12px; color:var(--steel);}
+  .stat-val{font-size:16px; font-weight:700;}
+  .cash-val{color:var(--counter); font-size:22px;}
+  .rep-bar-track{
+    width:100%; height:10px; background:#E4D8BE; border:1px solid var(--ink); margin-top:4px;
+  }
+  .rep-bar-fill{height:100%; background:var(--gold);}
+
+  .inv-list{margin-top:14px; display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;}
+  .inv-item{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    background:#fff;
+    border:1px solid var(--ink);
+    padding:6px 8px;
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+  }
+  .inv-item .cond-low{color:var(--coral);}
+  .inv-item .cond-ok{color:var(--mint);}
+  .empty-note{font-size:12px; color:var(--steel); font-style:italic;}
+
+  /* CUSTOMER / MAIN STAGE */
+  .stage{min-height:420px; display:flex; flex-direction:column;}
+  .customer-card{
+    display:flex; gap:16px; align-items:flex-start;
+    background:#fff;
+    border:2px solid var(--ink);
+    padding:16px;
+    margin-bottom:16px;
+    position:relative;
+  }
+  .avatar{
+    width:64px; height:64px;
+    background:var(--counter);
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:30px;
+    flex-shrink:0;
+  }
+  .cust-info{flex:1;}
+  .cust-name{font-weight:800; font-size:16px; margin:0 0 4px;}
+  .cust-line{font-size:13px; color:var(--steel); margin:0 0 2px;}
+  .phone-tag{
+    display:inline-block; margin-top:8px;
+    font-family:'Space Mono', monospace;
+    background:var(--paper); border:1px dashed var(--ink);
+    padding:6px 10px; font-size:12px;
+  }
+  .badge{
+    display:inline-block;
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    padding:3px 6px;
+    margin-left:6px;
+    color:#fff;
+    background:var(--steel);
+    vertical-align:middle;
+  }
+  .badge.mode-sell{background:var(--counter);}
+  .badge.mode-buy{background:var(--gold); color:var(--ink);}
+
+  .neg-zone{
+    background:#fff; border:2px solid var(--ink); padding:16px; flex:1;
+    display:flex; flex-direction:column; justify-content:space-between; gap:14px;
+  }
+  .offer-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .offer-row label{font-size:13px; font-weight:600;}
+  input[type=number]{
+    font-family:'Space Mono', monospace;
+    font-size:16px;
+    padding:6px 8px;
+    border:2px solid var(--ink);
+    width:120px;
+    background:var(--paper);
+  }
+  .btn{
+    font-family:'Noto Sans Thai', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:10px 16px;
+    border:2px solid var(--ink);
+    background:var(--gold);
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    transition: transform 0.05s ease;
+  }
+  .btn:active{transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,0.3);}
+  .btn.secondary{background:#fff;}
+  .btn.danger{background:var(--coral); color:#fff;}
+  .btn.mint{background:var(--mint); color:var(--ink);}
+  .btn:disabled{opacity:0.4; cursor:not-allowed; box-shadow:none;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+
+  .haggle-log{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    background:var(--paper);
+    border:1px dashed var(--ink);
+    padding:8px 10px;
+    min-height:36px;
+    color:var(--steel);
+  }
+
+  .no-customer{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    flex:1; gap:14px; text-align:center; padding:40px 10px;
+  }
+  .no-customer p{margin:0; color:var(--steel); font-size:14px;}
+
+  /* RECEIPT TICKET */
+  .receipt-overlay{
+    position:fixed; inset:0; background:rgba(18,51,45,0.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50; padding:20px;
+  }
+  .receipt{
+    width:260px;
+    background:#fffdf6;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--ink);
+    padding:18px 16px 24px;
+    position:relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    transform: rotate(-1.5deg);
+    animation: dropIn 0.35s ease;
+  }
+  @keyframes dropIn{
+    from{transform: translateY(-40px) rotate(-1.5deg); opacity:0;}
+    to{transform: translateY(0) rotate(-1.5deg); opacity:1;}
+  }
+  .receipt::before{
+    content:"";
+    position:absolute; left:0; right:0; bottom:-9px; height:18px;
+    background:
+      linear-gradient(-45deg, #fffdf6 8px, transparent 0),
+      linear-gradient(45deg, #fffdf6 8px, transparent 0);
+    background-size:16px 18px;
+    background-repeat:repeat-x;
+  }
+  .receipt h3{
+    font-family:'Press Start 2P', monospace;
+    font-size:11px; text-align:center; margin:0 0 10px;
+  }
+  .receipt hr{border:none; border-top:1px dashed #999; margin:8px 0;}
+  .receipt-row{display:flex; justify-content:space-between; margin:3px 0;}
+  .receipt-row.total{font-weight:700; font-size:14px;}
+  .receipt-row.profit{color:var(--mint);}
+  .receipt-row.loss{color:var(--coral);}
+  .receipt-close{
+    display:block; margin:14px auto 0;
+  }
+
+  .day-toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper);
+    font-family:'Press Start 2P', monospace;
+    font-size:10px; padding:10px 16px;
+    z-index:60; box-shadow:3px 3px 0 rgba(0,0,0,0.4);
+    animation: toastIn 0.3s ease;
+  }
+  @keyframes toastIn{from{opacity:0; top:-20px;} to{opacity:1; top:16px;}}
+
+  .footer-note{color:#CBEAE0; opacity:0.5; font-size:11px; margin-top:22px; text-align:center; max-width:600px;}
+</style>
+</head>
+<body>
+
+<div class="marquee">📱 ร้านมือถือป้าแดง 📱</div>
+<div class="subhead">Used Phone Shop Tycoon — Core Loop Prototype</div>
+
+<div class="app">
+  <div class="panel stage" id="stagePanel">
+    <h2 class="panel-title" id="stageTitle">รอลูกค้า...</h2>
+    <div id="stageContent"></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">สถานะร้าน</h2>
+    <div class="stats-grid">
+      <div class="stat-row"><span class="stat-label">วันที่</span><span class="stat-val" id="dayVal">1</span></div>
+      <div class="stat-row"><span class="stat-label">เงินสด</span><span class="stat-val cash-val" id="cashVal">2,000</span></div>
+      <div class="stat-row"><span class="stat-label">กำไรวันนี้</span><span class="stat-val" id="profitVal">0</span></div>
+      <div>
+        <span class="stat-label">ชื่อเสียงร้าน</span>
+        <div class="rep-bar-track"><div class="rep-bar-fill" id="repBar" style="width:50%"></div></div>
+      </div>
+    </div>
+    <h2 class="panel-title" style="margin-top:16px;">คลังมือถือ (<span id="invCount">0</span>)</h2>
+    <div class="inv-list" id="invList"><div class="empty-note">ยังไม่มีเครื่องในสต็อก</div></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn secondary" id="nextDayBtn" style="width:100%;">จบวัน / วันถัดไป →</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">Prototype เวอร์ชันแรก — ทดสอบวนลูป: ประเมิน → ต่อรอง → ซื้อ → ซ่อม → ตั้งราคา → ขาย → กำไร</div>
+
+<div id="modalRoot"></div>
+
+<script>
+// ---------- DATA ----------
+const PHONE_MODELS = [
+  {name:"iPhone 8", base:4500, tier:1},
+  {name:"iPhone 11", base:9500, tier:2},
+  {name:"iPhone 13", base:16000, tier:3},
+  {name:"Samsung A32", base:3800, tier:1},
+  {name:"Samsung S21", base:11500, tier:2},
+  {name:"Oppo Reno 6", base:5200, tier:1},
+  {name:"Vivo V23", base:6300, tier:1},
+  {name:"Xiaomi 12", base:8200, tier:2},
+];
+const CUSTOMER_FACES_SELL = ["🙍","🧔","👩","🧑‍🦱","👨‍🦳","👩‍🦰"];
+const CUSTOMER_FACES_BUY = ["🧑","👩‍💼","👨‍💼","🧕","👴","👵"];
+const NAMES = ["คุณสมชาย","คุณมาลี","น้องเอิร์ธ","พี่ต้อม","คุณยายสมศรี","คุณเบนซ์","น้องมิ้นท์","ลุงประเสริฐ"];
+
+// ---------- STATE ----------
+let state = {
+  cash: 2000,
+  day: 1,
+  reputation: 50,
+  dayProfit: 0,
+  inventory: [], // {id, name, base, condition, buyPrice, repaired}
+  customer: null, // current customer object
+  nextId: 1,
+};
+
+function rand(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function money(n){ return Math.round(n).toLocaleString('en-US'); }
+
+// ---------- CUSTOMER GENERATION ----------
+function spawnCustomer(mode){
+  if(mode === 'buy' && !state.inventory.some(p=>p.repaired)){
+    alert('ยังไม่มีเครื่องที่ซ่อมเสร็จในสต็อก ลูกค้ายังซื้อไม่ได้');
+    return;
+  }
+
+  if(mode === 'sell'){
+    const model = pick(PHONE_MODELS);
+    const condition = rand(35, 95); // %
+    const trueValue = Math.round(model.base * (condition/100) * 0.55); // shop's true valuation
+    const askPrice = Math.round(trueValue * (1 + rand(10,45)/100)); // customer asks higher
+    state.customer = {
+      mode:'sell',
+      name: pick(NAMES),
+      face: pick(CUSTOMER_FACES_SELL),
+      model: model.name,
+      condition,
+      trueValue,
+      askPrice,
+      patience: 3,
+      minAccept: Math.round(trueValue * 1.05), // lowest customer will go
+    };
+  } else {
+    const item = pick(state.inventory.filter(p=>p.repaired));
+    const marketVal = Math.round(item.base * (item.condition/100) * 0.9);
+    const willingMax = Math.round(marketVal * (1 + rand(0,15)/100));
+    state.customer = {
+      mode:'buy',
+      name: pick(NAMES),
+      face: pick(CUSTOMER_FACES_BUY),
+      itemId: item.id,
+      model: item.name,
+      condition: item.condition,
+      marketVal,
+      willingMax,
+      patience: 3,
+    };
+  }
+  render();
+}
+
+// ---------- RENDER ----------
+function render(){
+  document.getElementById('dayVal').textContent = state.day;
+  document.getElementById('cashVal').textContent = money(state.cash);
+  const profitEl = document.getElementById('profitVal');
+  profitEl.textContent = (state.dayProfit>=0?'+':'') + money(state.dayProfit);
+  profitEl.style.color = state.dayProfit >= 0 ? 'var(--mint)' : 'var(--coral)';
+  document.getElementById('repBar').style.width = Math.max(0,Math.min(100,state.reputation)) + '%';
+
+  // inventory
+  const invList = document.getElementById('invList');
+  document.getElementById('invCount').textContent = state.inventory.length;
+  if(state.inventory.length===0){
+    invList.innerHTML = '<div class="empty-note">ยังไม่มีเครื่องในสต็อก</div>';
+  } else {
+    invList.innerHTML = state.inventory.map(p=>{
+      const condClass = p.condition >= 70 ? 'cond-ok' : 'cond-low';
+      return `<div class="inv-item">
+        <span>${p.name}</span>
+        <span class="${condClass}">${p.condition}%${p.repaired?' ✓':''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const stageTitle = document.getElementById('stageTitle');
+  const stageContent = document.getElementById('stageContent');
+
+  if(!state.customer){
+    stageTitle.textContent = 'ร้านว่าง';
+    stageContent.innerHTML = `
+      <div class="no-customer">
+        <div style="font-size:40px;">🏪</div>
+        <p>ยังไม่มีลูกค้าเข้าร้าน</p>
+        <div class="btn-row">
+          <button class="btn mint" onclick="spawnCustomer('sell')">ลูกค้ามาขายเครื่อง</button>
+          <button class="btn" onclick="spawnCustomer('buy')" ${state.inventory.some(p=>p.repaired) ? '' : 'disabled title="ต้องมีเครื่องซ่อมเสร็จในสต็อกก่อน"'}>ลูกค้ามาซื้อเครื่อง</button>
+        </div>
+        ${!state.inventory.some(p=>p.repaired) ? '<p style="font-size:11px; color:var(--steel); margin-top:6px;">* ต้องรับซื้อและซ่อมเครื่องอย่างน้อย 1 เครื่องก่อน ลูกค้าถึงจะมาซื้อได้</p>' : ''}
+      </div>`;
+    return;
+  }
+
+  const c = state.customer;
+  if(c.mode === 'sell'){
+    stageTitle.innerHTML = 'ลูกค้าต้องการขาย <span class="badge mode-sell">SELL-IN</span>';
+    stageContent.innerHTML = `
+      <div class="customer-card">
+        <div class="avatar">${c.face}</div>
+        <div class="cust-info">
+          <p class="cust-name">${c.name}</p>
+          <p class="cust-line">"เอามือถือมาขายค่ะ/ครับ"</p>
+          <div class="phone-tag">${c.model} · สภาพ ${c.condition}%</div>
+        </div>
+      </div>
+      <div class="neg-zone">
+        <div>
+          <p class="cust-line">ลูกค้าตั้งราคาขอ: <b>${money(c.askPrice)} บาท</b></p>
+          <p class="cust-line">คุณประเมินมูลค่าจริง (โดยประมาณ): <b>${money(c.trueValue)} บาท</b></p>
+          <div class="offer-row">
+            <label>เสนอราคาซื้อ:</label>
+            <input type="number" id="offerInput" value="${Math.round(c.trueValue*0.85)}" step="50">
+            <button class="btn secondary" onclick="makeOffer()">เสนอราคา</button>
+          </div>
+          <div class="haggle-log" id="haggleLog">รอการเสนอราคาของคุณ... (เหลือ ${c.patience} ครั้ง)</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn danger" onclick="rejectCustomer()">ปฏิเสธ / ไล่ลูกค้า</button>
+        </div>
+      </div>
+    `;
+  } else {
+    stageTitle.innerHTML = 'ลูกค้าสนใจซื้อ <span class="badge mode-buy">SELL-OUT</span>';
+    stageContent.innerHTML = `
+      <div class="customer-card">
+        <div class="avatar">${c.face}</div>
+        <div class="cust-info">
+          <p class="cust-name">${c.name}</p>
+          <p class="cust-line">"สนใจเครื่อง ${c.model} ในตู้ครับ/ค่ะ"</p>
+          <div class="phone-tag">${c.model} · สภาพ ${c.condition}% (ซ่อมแล้ว)</div>
+        </div>
+      </div>
+      <div class="neg-zone">
+        <div>
+          <p class="cust-line">ราคาตลาดโดยประมาณ: <b>${money(c.marketVal)} บาท</b></p>
+          <div class="offer-row">
+            <label>ตั้งราคาขาย:</label>
+            <input type="number" id="offerInput" value="${Math.round(c.marketVal*1.1)}" step="50">
+            <button class="btn secondary" onclick="makeSellOffer()">เสนอราคาขาย</button>
+          </div>
+          <div class="haggle-log" id="haggleLog">รอการตั้งราคาของคุณ... (เหลือ ${c.patience} ครั้ง)</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn danger" onclick="rejectCustomer()">ยกเลิก</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ---------- SELL-IN (buying stock from customer) NEGOTIATION ----------
+function makeOffer(){
+  const c = state.customer;
+  const offer = Number(document.getElementById('offerInput').value);
+  const log = document.getElementById('haggleLog');
+  c.patience -= 1;
+
+  if(offer >= c.minAccept){
+    // deal!
+    log.textContent = `${c.name} ตกลง! "โอเคค่ะ/ครับ ราคานี้โอเค"`;
+    finalizeBuy(offer);
+    return;
+  }
+  if(offer < c.trueValue * 0.5){
+    log.textContent = `${c.name} ทำหน้าเบ้ "ราคานี้ต่ำไปนะ" — ลูกค้าเดินออกจากร้าน`;
+    setTimeout(()=>{ state.customer=null; render(); }, 1400);
+    return;
+  }
+  if(c.patience <= 0){
+    log.textContent = `${c.name} "งั้นไม่ขายดีกว่าค่ะ/ครับ" — ลูกค้าเดินออกจากร้าน`;
+    setTimeout(()=>{ state.customer=null; render(); }, 1400);
+    return;
+  }
+  // counter
+  c.minAccept = Math.round((c.minAccept + offer)/2);
+  log.textContent = `${c.name} ต่อรอง: "ขอสัก ${money(c.minAccept)} บาทได้ไหม?" (เหลือ ${c.patience} ครั้ง)`;
+  render();
+  // re-attach log after render (render rewrites the DOM)
+  document.getElementById('haggleLog').textContent = `${c.name} ต่อรอง: "ขอสัก ${money(c.minAccept)} บาทได้ไหม?" (เหลือ ${c.patience} ครั้ง)`;
+}
+
+function finalizeBuy(price){
+  const c = state.customer;
+  state.cash -= price;
+  const item = {
+    id: state.nextId++,
+    name: c.model,
+    base: PHONE_MODELS.find(m=>m.name===c.model).base,
+    condition: c.condition,
+    buyPrice: price,
+    repaired: false,
+  };
+  state.inventory.push(item);
+  state.reputation = Math.min(100, state.reputation + 2);
+  state.customer = null;
+  setTimeout(()=>{
+    showReceipt({
+      title:'ใบรับซื้อเครื่อง',
+      rows:[
+        ['รุ่นเครื่อง', item.name],
+        ['สภาพ', item.condition+'%'],
+        ['ราคารับซื้อ', '-'+money(price)+' บ.'],
+      ],
+      totalLabel:'เงินสดคงเหลือ',
+      totalVal: money(state.cash)+' บ.',
+    });
+    render();
+  }, 300);
+}
+
+// ---------- REPAIR ----------
+function repairItem(id){
+  const item = state.inventory.find(p=>p.id===id);
+  if(!item || item.repaired) return;
+  const cost = Math.round(item.base * 0.06);
+  if(state.cash < cost){ alert('เงินสดไม่พอสำหรับค่าซ่อม'); return; }
+  state.cash -= cost;
+  state.dayProfit -= cost;
+  item.condition = Math.min(99, item.condition + rand(15,25));
+  item.repaired = true;
+  render();
+}
+
+// ---------- SELL-OUT (selling stock to customer) NEGOTIATION ----------
+function makeSellOffer(){
+  const c = state.customer;
+  const offer = Number(document.getElementById('offerInput').value);
+  const log = document.getElementById('haggleLog');
+  c.patience -= 1;
+
+  if(offer <= c.willingMax){
+    log.textContent = `${c.name} "ตกลงครับ/ค่ะ เอาเลย!"`;
+    finalizeSell(offer);
+    return;
+  }
+  if(offer > c.willingMax * 1.35 || c.patience <= 0){
+    log.textContent = `${c.name} "แพงไปครับ/ค่ะ ขอคิดดูก่อน" — ลูกค้าเดินออกจากร้าน`;
+    setTimeout(()=>{ state.customer=null; render(); }, 1400);
+    return;
+  }
+  c.willingMax = Math.round((c.willingMax + offer)/2);
+  render();
+  document.getElementById('haggleLog').textContent = `${c.name} ต่อรอง: "ลดให้หน่อยได้ไหม สัก ${money(c.willingMax)} บาท?" (เหลือ ${c.patience} ครั้ง)`;
+}
+
+function finalizeSell(price){
+  const c = state.customer;
+  const item = state.inventory.find(p=>p.id===c.itemId);
+  const profit = price - item.buyPrice - Math.round(item.base*0.06);
+  state.cash += price;
+  state.dayProfit += profit + Math.round(item.base*0.06); // repair cost already deducted earlier, add back for clean profit calc below
+  state.dayProfit = state.dayProfit; // (kept simple; repair already subtracted at repair time)
+  state.inventory = state.inventory.filter(p=>p.id!==c.itemId);
+  state.reputation = Math.min(100, state.reputation + 3);
+  state.customer = null;
+  setTimeout(()=>{
+    showReceipt({
+      title:'ใบเสร็จการขาย',
+      rows:[
+        ['รุ
