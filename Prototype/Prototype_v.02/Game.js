@@ -1,7 +1,7 @@
 /* =========================================================================
    DATA LAYER (data-driven configuration — no gameplay values hardcoded
    inside logic functions; everything reads from these tables)
-   ========================================================================= *//
+   ========================================================================= */
 
 const PHONE_MODELS = [
   {brand:"iPear",   model:"iPear 8",      base:4500,  tier:1},
