@@ -30,6 +30,19 @@ const PERSONALITIES = [
   {id:'expert',     name:'มืออาชีพ',  patience:3, flexibility:0.35, trustBonus:0,  budgetMult:1.10, icon:'🧐'},
 ];
 
+// Negotiation tuning constants (QA pass — opening price + concession feel).
+// moodConcessionMult scales how much a customer moves per round based on
+// their current mood — this is what makes mood affect BEHAVIOR, not just
+// the icon shown. minConcessionPct guarantees a visible move each round so
+// a counter-offer never repeats the same number without a reason.
+const MOOD_CONCESSION_MULT = {happy:1.25, neutral:1.0, thinking:0.9, disappointed:0.65, angry:0.4};
+const MIN_CONCESSION_PCT = 0.02; // floor: at least ~2% of reference value moves per round
+// Rare Negotiation Outcomes (QA gameplay feedback) — flat, personality-independent
+// chance so players can't find a reliable formula to force it.
+const LUCKY_BLUFF_CHANCE = 0.10; // buy-side: customer rarely accepts a lowball offer outright
+const LUCKY_SALE_CHANCE  = 0.10; // sell-side: customer rarely buys immediately without haggling
+
+
 const OCCUPATIONS = ["นักศึกษา","พนักงานออฟฟิศ","ครู","เกษตรกร","เจ้าของกิจการ","ข้าราชการ","ฟรีแลนซ์","ไรเดอร์","ช่างซ่อม","เกษียณอายุ"];
 const CUSTOMER_FACES_SELL = ["🙍","🧔","👩","🧑‍🦱","👨‍🦳","👩‍🦰"];
 const CUSTOMER_FACES_BUY  = ["🧑","👩‍💼","👨‍💼","🧕","👴","👵"];
@@ -351,8 +364,8 @@ function spawnCustomer(mode){
     const trust = computeTrust(personality);
     const discountMod = 1 - (state.todayMods.buyDiscount || 0);
     const trueValue = Math.round(model.base * (phone.condition/100) * 0.55 * discountMod);
-    const greedFactor = personality.id==='greedy' ? 0.10 : (personality.id==='expert'? 0.05 : 0.20);
-    const askPrice = Math.round(trueValue * (1 + rand(10,45)/100 * (1+greedFactor)));
+    const greedFactor = personality.id==='greedy' ? 0.08 : (personality.id==='expert'? 0.04 : 0.15);
+    const askPrice = Math.round(trueValue * (1 + rand(8,30)/100 * (1+greedFactor)));
     state.customer = {
       mode:'sell',
       name: pick(NAMES),
@@ -366,7 +379,7 @@ function spawnCustomer(mode){
       trueValue,
       patience: personality.patience,
       maxPatience: personality.patience,
-      minAccept: Math.round(trueValue * (1.02 + (1-personality.flexibility)*0.15)),
+      minAccept: Math.round(trueValue * (1.00 + (1-personality.flexibility)*0.12)),
       rounds:0,
     };
   } else {
@@ -427,6 +440,16 @@ function makeOffer(){
     finalizeBuy(offer);
     return;
   }
+
+  // Rare Negotiation Outcome — Lucky Bluff (~10%, flat, independent of hidden
+  // defects/personality/mood): customer unexpectedly accepts a below-minAccept
+  // offer outright. Guarded by a floor so it never fires on a near-zero offer.
+  if(offer >= c.trueValue * 0.25 && Math.random() < LUCKY_BLUFF_CHANCE){
+    logHaggle(`${c.name} เงียบไปครู่หนึ่ง... "เอาก็เอา ตกลงค่ะ/ครับ" (ลูกค้าตัดสินใจเร็วผิดปกติ)`);
+    finalizeBuy(offer);
+    return;
+  }
+
   const ratio = offer / c.minAccept;
   c.mood = moodForRatio(ratio);
 
@@ -446,8 +469,25 @@ function makeOffer(){
     setTimeout(()=>{ state.customer=null; render(); }, 1300);
     return;
   }
-  // counter-offer: minAccept moves toward the player's offer, scaled by personality flexibility
-  c.minAccept = Math.round(c.minAccept - (c.minAccept - offer) * c.personality.flexibility);
+  // Counter-offer: minAccept moves toward the player's offer. Rate is driven by
+  // personality flexibility (as before) AND the mood this offer just produced —
+  // a happier customer concedes faster, an angry one gets stubborn. A minimum
+  // absolute step guarantees the number visibly changes every round instead of
+  // stalling on the same figure.
+  const gapBuy = c.minAccept - offer;
+  const moodMultBuy = MOOD_CONCESSION_MULT[c.mood] ?? 1.0;
+  const concedeBuy = Math.max(
+    gapBuy * c.personality.flexibility * moodMultBuy,
+    c.trueValue * MIN_CONCESSION_PCT
+  );
+  const nextMinAccept = Math.round(c.minAccept - concedeBuy);
+  if(nextMinAccept <= offer){
+    // the concession lands at/below what the player already offered — deal closes now
+    logHaggle(`${c.name} ${c.personality.icon} "เอาล่ะ ตกลงตามนั้น!"`);
+    finalizeBuy(offer);
+    return;
+  }
+  c.minAccept = nextMinAccept;
   logHaggle(`${c.name} ${MOOD_ICON[c.mood]} ต่อรอง: "ขอสัก ${money(c.minAccept)} บาทได้ไหม?" (เหลือ ${c.patience} ครั้ง)`);
   render();
 }
@@ -510,6 +550,18 @@ function makeSellOffer(){
     finalizeSell(price);
     return;
   }
+
+  // Rare Negotiation Outcome — Lucky Sale (~10%, flat, independent of pricing
+  // logic/personality/mood): customer rarely buys immediately without haggling,
+  // even though the asking price is above what they'd normally accept. Capped
+  // at the same 1.4x ceiling used for the walk-away check so it can't be used
+  // to push absurd prices through and break the economy.
+  if(price <= c.willingMax * 1.4 && Math.random() < LUCKY_SALE_CHANCE){
+    logHaggle(`${c.name} "เอาเลยค่ะ/ครับ ไม่ต้องต่อ!" (ลูกค้าตัดสินใจซื้อทันทีโดยไม่ต่อราคา)`);
+    finalizeSell(price);
+    return;
+  }
+
   const ratio = c.willingMax / price;
   c.mood = moodForRatio(ratio);
 
@@ -521,7 +573,23 @@ function makeSellOffer(){
     setTimeout(()=>{ state.customer=null; render(); }, 1300);
     return;
   }
-  c.willingMax = Math.round(c.willingMax + (price - c.willingMax) * c.personality.flexibility);
+  // Counter-offer: willingMax moves toward the player's price. Rate is driven
+  // by personality flexibility AND the mood this offer just produced, with a
+  // minimum absolute step so the number never stalls on the same figure.
+  const gapSell = price - c.willingMax;
+  const moodMultSell = MOOD_CONCESSION_MULT[c.mood] ?? 1.0;
+  const concedeSell = Math.max(
+    gapSell * c.personality.flexibility * moodMultSell,
+    c.marketVal * MIN_CONCESSION_PCT
+  );
+  const nextWillingMax = Math.round(c.willingMax + concedeSell);
+  if(nextWillingMax >= price){
+    // the concession reaches/exceeds the player's asking price — deal closes now
+    logHaggle(`${c.name} ${c.personality.icon} "เอาล่ะ ตกลงตามนั้น!"`);
+    finalizeSell(price);
+    return;
+  }
+  c.willingMax = nextWillingMax;
   logHaggle(`${c.name} ${MOOD_ICON[c.mood]} ต่อรอง: "ลดให้หน่อยได้ไหม สัก ${money(c.willingMax)} บาท?" (เหลือ ${c.patience} ครั้ง)`);
   render();
 }
