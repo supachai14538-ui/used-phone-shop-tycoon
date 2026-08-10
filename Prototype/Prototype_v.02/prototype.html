@@ -1,23 +1,85 @@
-📱 ร้านมือถือป้าแดง Used Phone Shop Tycoon — Gameplay Prototype
-1วัน
-2,000เงินสด
-0กำไรวันนี้
-50ชื่อเสียง
-รอลูกค้า...
-คลังมือถือ
-อัปเกรดร้าน
-พนักงาน
-รายงานกิจการ
-ตั้งค่า / บันทึกเกม
-สถานะร้าน
-วันที่1
-เงินสด2,000
-รายรับวันนี้0
-รายจ่ายวันนี้0
-กำไรวันนี้0
-ชื่อเสียงร้าน
-ปานกลาง (50/100)
-คลังมือถือ (0/8)
-ยังไม่มีเครื่องในสต็อก
-จบวัน / วันถัดไป →
-Gameplay Prototype — ระบบทั้งหมดทำงานจริง: ลูกค้า/ต่อรอง/ซื้อ/ตรวจสภาพ/ซ่อม/สต็อก/ตั้งราคาขาย/ชื่อเสียง/เศรษฐกิจ (ค่าเช่า ค่าไฟ เงินเดือน ภาษี)/อัปเกรดร้าน/พนักงาน/เซฟเกม/เหตุการณ์สุ่มรายวัน
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ร้านมือถือป้าแดง — Used Phone Shop Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Thai:wght@400;600;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">📱 ร้านมือถือป้าแดง <small>Used Phone Shop Tycoon — Gameplay Prototype</small></div>
+  <div class="topstats">
+    <div class="topstat"><span id="tsDay">1</span><span class="lbl">วัน</span></div>
+    <div class="topstat"><span id="tsCash">2,000</span><span class="lbl">เงินสด</span></div>
+    <div class="topstat"><span id="tsProfit">0</span><span class="lbl">กำไรวันนี้</span></div>
+    <div class="topstat"><span id="tsRep">50</span><span class="lbl">ชื่อเสียง</span></div>
+  </div>
+</div>
+
+<div class="tabbar" id="tabBar"></div>
+
+<div class="app" id="appRoot">
+  <div class="panel stage screen active" id="screen-shop">
+    <h2 class="panel-title" id="stageTitle">รอลูกค้า...</h2>
+    <div id="stageContent"></div>
+  </div>
+
+  <div class="panel screen" id="screen-inventory">
+    <h2 class="panel-title">คลังมือถือ</h2>
+    <div id="inventoryScreenContent"></div>
+  </div>
+
+  <div class="panel screen" id="screen-upgrades">
+    <h2 class="panel-title">อัปเกรดร้าน</h2>
+    <div id="upgradesScreenContent"></div>
+  </div>
+
+  <div class="panel screen" id="screen-staff">
+    <h2 class="panel-title">พนักงาน</h2>
+    <div id="staffScreenContent"></div>
+  </div>
+
+  <div class="panel screen" id="screen-reports">
+    <h2 class="panel-title">รายงานกิจการ</h2>
+    <div id="reportsScreenContent"></div>
+  </div>
+
+  <div class="panel screen" id="screen-settings">
+    <h2 class="panel-title">ตั้งค่า / บันทึกเกม</h2>
+    <div id="settingsScreenContent"></div>
+  </div>
+
+  <div class="panel" id="sidebarPanel">
+    <h2 class="panel-title">สถานะร้าน</h2>
+    <div class="stats-grid">
+      <div class="stat-row"><span class="stat-label">วันที่</span><span class="stat-val" id="dayVal">1</span></div>
+      <div class="stat-row"><span class="stat-label">เงินสด</span><span class="stat-val cash-val" id="cashVal">2,000</span></div>
+      <div class="stat-row"><span class="stat-label">รายรับวันนี้</span><span class="stat-val" id="revVal">0</span></div>
+      <div class="stat-row"><span class="stat-label">รายจ่ายวันนี้</span><span class="stat-val" id="expVal">0</span></div>
+      <div class="stat-row"><span class="stat-label">กำไรวันนี้</span><span class="stat-val" id="profitVal">0</span></div>
+      <div>
+        <span class="stat-label">ชื่อเสียงร้าน</span>
+        <div class="rep-bar-track"><div class="rep-bar-fill" id="repBar" style="width:50%"></div></div>
+        <div class="rep-level-label" id="repLevelLabel">ปานกลาง (50/100)</div>
+      </div>
+    </div>
+    <h2 class="panel-title" style="margin-top:16px;">คลังมือถือ (<span id="invCount">0</span>/<span id="invCap">8</span>)</h2>
+    <div class="inv-list" id="invList"><div class="empty-note">ยังไม่มีเครื่องในสต็อก</div></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn secondary" id="nextDayBtn" style="width:100%;">จบวัน / วันถัดไป →</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">Gameplay Prototype — ระบบทั้งหมดทำงานจริง: ลูกค้า/ต่อรอง/ซื้อ/ตรวจสภาพ/ซ่อม/สต็อก/ตั้งราคาขาย/ชื่อเสียง/เศรษฐกิจ (ค่าเช่า ค่าไฟ เงินเดือน ภาษี)/อัปเกรดร้าน/พนักงาน/เซฟเกม/เหตุการณ์สุ่มรายวัน</div>
+
+<div id="modalRoot"></div>
+
+<script src="game.js"></script>
+</body>
+</html>
