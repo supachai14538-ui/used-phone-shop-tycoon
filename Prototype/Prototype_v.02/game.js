@@ -181,6 +181,12 @@ function createDefaultState(){
 
 let state = createDefaultState();
 
+// ---------- UI-ONLY STATE (not saved, not gameplay) ----------
+// Whether the customer interaction bottom sheet is expanded over the scene.
+// Purely a display flag for the mobile layout — never read by any gameplay
+// function (negotiation math, economy, etc. is untouched by this flag).
+let customerSheetOpen = false;
+
 // ---------- UTILITIES ----------
 function rand(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -458,7 +464,7 @@ function makeOffer(){
     state.stats.negotiationFail++;
     state.reputation = clamp(state.reputation - 1, 0, 100);
     c.leaving = true;
-    setTimeout(()=>{ state.customer=null; render(); }, 1300);
+    setTimeout(()=>{ state.customer=null; customerSheetOpen=false; closeSheet(); render(); }, 1300);
     return;
   }
   if(c.patience <= 0){
@@ -466,7 +472,7 @@ function makeOffer(){
     state.stats.negotiationFail++;
     state.stats.customersLeft++;
     c.leaving = true;
-    setTimeout(()=>{ state.customer=null; render(); }, 1300);
+    setTimeout(()=>{ state.customer=null; customerSheetOpen=false; closeSheet(); render(); }, 1300);
     return;
   }
   // Counter-offer: minAccept moves toward the player's offer. Rate is driven by
@@ -513,6 +519,8 @@ function finalizeBuy(price){
   const repGain = price >= c.trueValue*0.9 ? 2 : 1;
   state.reputation = clamp(state.reputation + repGain, 0, 100);
   state.customer = null;
+  customerSheetOpen = false;
+  closeSheet();
   setTimeout(()=>{
     const hidden = hiddenDefectSummary(item);
     showReceipt({
@@ -570,7 +578,7 @@ function makeSellOffer(){
     state.stats.negotiationFail++;
     state.stats.customersLeft++;
     c.leaving = true;
-    setTimeout(()=>{ state.customer=null; render(); }, 1300);
+    setTimeout(()=>{ state.customer=null; customerSheetOpen=false; closeSheet(); render(); }, 1300);
     return;
   }
   // Counter-offer: willingMax moves toward the player's price. Rate is driven
@@ -621,6 +629,8 @@ function finalizeSell(price){
   state.reputation = clamp(state.reputation + repChange, 0, 100);
 
   state.customer = null;
+  customerSheetOpen = false;
+  closeSheet();
   setTimeout(()=>{
     showReceipt({
       title:'ใบเสร็จการขาย',
@@ -642,6 +652,8 @@ function finalizeSell(price){
 
 function rejectCustomer(){
   state.customer = null;
+  customerSheetOpen = false;
+  closeSheet();
   state.reputation = clamp(state.reputation - 1, 0, 100);
   state.stats.customersLeft++;
   render();
@@ -886,6 +898,18 @@ function openModal(innerHtml){
 function closeModal(){
   document.getElementById('modalRoot').innerHTML = '';
 }
+
+// ---------- BOTTOM SHEET (mobile "Detail Panel" / "Main Menu" surface) ----------
+// Separate from openModal/closeModal (centered dialogs used for receipts,
+// confirmations, item detail) so the customer interaction sheet and the icon
+// menu can slide up from the bottom without colliding with those dialogs.
+function openSheet(innerHtml){
+  const root = document.getElementById('sheetRoot');
+  root.innerHTML = `<div class="sheet-overlay" onclick="if(event.target===this) closeSheet()"><div class="sheet-box"><div class="sheet-handle"></div>${innerHtml}</div></div>`;
+}
+function closeSheet(){
+  document.getElementById('sheetRoot').innerHTML = '';
+}
 function showReceipt({title, rows, totalLabel, totalVal, good}){
   const root = document.getElementById('modalRoot');
   root.innerHTML = `
@@ -924,23 +948,35 @@ function showEventToast(text){
    ========================================================================= */
 
 const TABS = [
-  {id:'shop', label:'🏪 ร้านค้า'},
-  {id:'inventory', label:'📦 คลังสินค้า'},
-  {id:'upgrades', label:'⬆️ อัปเกรด'},
-  {id:'staff', label:'👥 พนักงาน'},
-  {id:'reports', label:'📊 รายงาน'},
-  {id:'settings', label:'⚙️ ตั้งค่า'},
+  {id:'shop', icon:'🏪', label:'ร้าน'},
+  {id:'inventory', icon:'📦', label:'คลังสินค้า'},
+  {id:'staff', icon:'👤', label:'พนักงาน'},
+  {id:'reports', icon:'📊', label:'รายงาน'},
+  {id:'upgrades', icon:'⬆️', label:'อัปเกรด'},
+  {id:'settings', icon:'⚙️', label:'ตั้งค่า'},
 ];
-function renderTabBar(){
-  const bar = document.getElementById('tabBar');
-  bar.innerHTML = TABS.map(t=>`<button class="tabbtn ${state.activeTab===t.id?'active':''}" onclick="setTab('${t.id}')">${t.label}</button>`).join('');
+
+// Icon-based main menu, opened from the small menu FAB. Renders as a bottom
+// sheet so it never permanently occupies scene space (spec #9/#10).
+function openMenuSheet(){
+  openSheet(`
+    <h3 style="margin:0 0 14px;">เมนูหลัก</h3>
+    <div class="menu-grid">
+      ${TABS.map(t=>`
+        <button class="menu-icon-btn ${state.activeTab===t.id?'active':''}" onclick="setTab('${t.id}')">
+          <span class="menu-icon">${t.icon}</span>
+          <span class="menu-icon-label">${t.label}</span>
+        </button>
+      `).join('')}
+    </div>
+  `);
 }
 function setTab(id){
   state.activeTab = id;
-  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-  document.getElementById('sidebarPanel').style.display = (id==='shop') ? '' : 'none';
-  renderTabBar();
+  closeSheet();
+  document.getElementById('sceneRoot').style.display = (id==='shop') ? '' : 'none';
+  document.querySelectorAll('.screen-overlay').forEach(el=>el.classList.remove('active'));
+  if(id !== 'shop'){ document.getElementById('screen-'+id).classList.add('active'); }
   renderScreenContent();
 }
 
@@ -949,11 +985,16 @@ function setTab(id){
    ========================================================================= */
 
 function renderTopAndSidebar(){
+  // Compact top HUD (spec #5): shop name/level, day, cash, reputation only.
   document.getElementById('tsDay').textContent = state.day;
   document.getElementById('tsCash').textContent = money(state.cash);
-  document.getElementById('tsProfit').textContent = (state.dayProfit>=0?'+':'') + money(state.dayProfit);
   document.getElementById('tsRep').textContent = Math.round(state.reputation);
+  const shopLevel = state.upgrades.size + state.upgrades.repairDesk + state.upgrades.storage + state.upgrades.decoration;
+  const hudLevelEl = document.getElementById('hudLevel');
+  if(hudLevelEl) hudLevelEl.textContent = 'Lv.' + shopLevel;
 
+  // Detailed "today" status card — relocated into the ร้าน/อัปเกรด screen
+  // (spec #16) instead of a permanent dashboard sidebar.
   document.getElementById('dayVal').textContent = state.day;
   document.getElementById('cashVal').textContent = money(state.cash);
   document.getElementById('revVal').textContent = money(state.dayRevenue);
@@ -967,56 +1008,34 @@ function renderTopAndSidebar(){
   const lvl = getReputationLevel(state.reputation);
   document.getElementById('repLevelLabel').textContent = `${lvl.label} (${Math.round(repClamped)}/100)`;
 
-  const cap = getInventoryCapacity();
-  document.getElementById('invCap').textContent = cap;
-  document.getElementById('invCount').textContent = state.inventory.length;
-  const invList = document.getElementById('invList');
-  if(state.inventory.length===0){
-    invList.innerHTML = '<div class="empty-note">ยังไม่มีเครื่องในสต็อก</div>';
-  } else {
-    invList.innerHTML = state.inventory.slice(0,30).map(p=>{
-      const condClass = p.condition >= 70 ? 'cond-ok' : (p.condition>=45?'cond-mid':'cond-low');
-      const statusTxt = p.status==='listed' ? ' 🏷️' : (isFullyRepaired(p) ? ' ✓' : ' ⚠');
-      return `<div class="inv-item"><span>${p.brand} ${p.model}</span><span class="${condClass}">${p.condition}%${statusTxt}</span></div>`;
-    }).join('');
-  }
+  const capEl = document.getElementById('capVal');
+  if(capEl) capEl.textContent = state.inventory.length + ' / ' + getInventoryCapacity();
 }
 
 /* =========================================================================
    UI — SHOP SCREEN (core loop: customer + negotiation)
    ========================================================================= */
 
-function renderShopScreen(){
-  const stageTitle = document.getElementById('stageTitle');
-  const stageContent = document.getElementById('stageContent');
+// Opens the negotiation Detail Panel as a bottom sheet over the scene
+// (spec #7/#10). Tapping the customer teaser in the scene calls this.
+function openCustomerSheet(){
+  if(!state.customer) return;
+  customerSheetOpen = true;
+  renderShopScreen();
+}
+function closeCustomerSheet(){
+  customerSheetOpen = false;
+  closeSheet();
+}
 
-  if(!state.customer){
-    stageTitle.textContent = 'ร้านว่าง';
-    const cap = getInventoryCapacity();
-    const canBuyIn = state.inventory.length < cap;
-    const canSellOut = state.inventory.some(p=>p.status==='listed');
-    stageContent.innerHTML = `
-      <div class="no-customer">
-        <div style="font-size:40px;">🏪</div>
-        <p>ยังไม่มีลูกค้าเข้าร้าน</p>
-        <div class="btn-row">
-          <button class="btn mint" onclick="spawnCustomer('sell')" ${canBuyIn?'':'disabled'}>ลูกค้ามาขายเครื่อง</button>
-          <button class="btn" onclick="spawnCustomer('buy')" ${canSellOut ? '' : 'disabled'}>ลูกค้ามาซื้อเครื่อง</button>
-        </div>
-        ${!canBuyIn ? '<p style="font-size:11px; color:var(--coral); margin-top:6px;">* สต็อกเต็ม ('+state.inventory.length+'/'+cap+') — ขายเครื่องออกหรืออัปเกรดพื้นที่ร้านก่อนรับซื้อเพิ่ม</p>' : ''}
-        ${!canSellOut ? '<p style="font-size:11px; color:var(--steel); margin-top:6px;">* ต้องซ่อมและ "ตั้งขาย" เครื่องอย่างน้อย 1 เครื่องในแท็บคลังสินค้าก่อน ลูกค้าถึงจะมาซื้อได้</p>' : ''}
-      </div>`;
-    return;
-  }
-
-  const c = state.customer;
+function buildNegotiationSheetHtml(c){
   const moodIcon = MOOD_ICON[c.mood];
   const moodLabel = MOOD_LABEL[c.mood];
-
   if(c.mode === 'sell'){
     const visDefects = visibleDefectSummary(c.phone);
-    stageTitle.innerHTML = 'ลูกค้าต้องการขาย <span class="badge mode-sell">SELL-IN</span>';
-    stageContent.innerHTML = `
+    return `
+      <button class="btn secondary small modal-close-x" onclick="closeCustomerSheet()">ปิด ✕</button>
+      <h3>ลูกค้าต้องการขาย <span class="badge mode-sell">SELL-IN</span></h3>
       <div class="customer-card">
         <div class="avatar">${c.face}</div>
         <div class="cust-info">
@@ -1049,37 +1068,84 @@ function renderShopScreen(){
         </div>
       </div>
     `;
-  } else {
-    stageTitle.innerHTML = 'ลูกค้าสนใจซื้อ <span class="badge mode-buy">SELL-OUT</span>';
+  }
+  return `
+    <button class="btn secondary small modal-close-x" onclick="closeCustomerSheet()">ปิด ✕</button>
+    <h3>ลูกค้าสนใจซื้อ <span class="badge mode-buy">SELL-OUT</span></h3>
+    <div class="customer-card">
+      <div class="avatar">${c.face}</div>
+      <div class="cust-info">
+        <p class="cust-name">${c.name} <span style="font-weight:400; font-size:12px; color:var(--steel);">(${c.occupation})</span></p>
+        <p class="cust-line">"สนใจเครื่อง ${c.phone.brand} ${c.phone.model} ในตู้ครับ/ค่ะ"</p>
+        <div class="phone-tag">${c.phone.brand} ${c.phone.model} · สภาพ ${c.phone.condition}% · ตั้งราคาไว้ ${money(c.phone.sellPrice)} บ.</div>
+        <div class="cust-tags">
+          <span class="tag">${c.personality.icon} ${c.personality.name}</span>
+          <span class="tag mood">${moodIcon} ${moodLabel}</span>
+          <span class="tag">ความอดทน ${c.patience}/${c.maxPatience}</span>
+        </div>
+      </div>
+    </div>
+    <div class="neg-zone">
+      <div>
+        <p class="cust-line">ราคาตลาดโดยประมาณ: <b>${money(c.marketVal)} บาท</b></p>
+        <div class="offer-row">
+          <label>เสนอราคาขาย:</label>
+          <input type="number" id="offerInput" value="${c.phone.sellPrice}" step="50">
+          <button class="btn secondary" onclick="makeSellOffer()">เสนอราคานี้</button>
+        </div>
+        <div class="haggle-log" id="haggleLog">รอการตั้งราคาของคุณ... (เหลือ ${c.patience} ครั้ง)</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn danger" onclick="rejectCustomer()">ยกเลิก</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderShopScreen(){
+  const stageContent = document.getElementById('stageContent');
+
+  if(!state.customer){
+    const cap = getInventoryCapacity();
+    const canBuyIn = state.inventory.length < cap;
+    const canSellOut = state.inventory.some(p=>p.status==='listed');
     stageContent.innerHTML = `
-      <div class="customer-card">
-        <div class="avatar">${c.face}</div>
-        <div class="cust-info">
-          <p class="cust-name">${c.name} <span style="font-weight:400; font-size:12px; color:var(--steel);">(${c.occupation})</span></p>
-          <p class="cust-line">"สนใจเครื่อง ${c.phone.brand} ${c.phone.model} ในตู้ครับ/ค่ะ"</p>
-          <div class="phone-tag">${c.phone.brand} ${c.phone.model} · สภาพ ${c.phone.condition}% · ตั้งราคาไว้ ${money(c.phone.sellPrice)} บ.</div>
-          <div class="cust-tags">
-            <span class="tag">${c.personality.icon} ${c.personality.name}</span>
-            <span class="tag mood">${moodIcon} ${moodLabel}</span>
-            <span class="tag">ความอดทน ${c.patience}/${c.maxPatience}</span>
-          </div>
-        </div>
-      </div>
-      <div class="neg-zone">
-        <div>
-          <p class="cust-line">ราคาตลาดโดยประมาณ: <b>${money(c.marketVal)} บาท</b></p>
-          <div class="offer-row">
-            <label>เสนอราคาขาย:</label>
-            <input type="number" id="offerInput" value="${c.phone.sellPrice}" step="50">
-            <button class="btn secondary" onclick="makeSellOffer()">เสนอราคานี้</button>
-          </div>
-          <div class="haggle-log" id="haggleLog">รอการตั้งราคาของคุณ... (เหลือ ${c.patience} ครั้ง)</div>
-        </div>
+      <div class="no-customer">
+        <div class="scene-shop-icon">🏪</div>
+        <p>ยังไม่มีลูกค้าเข้าร้าน</p>
         <div class="btn-row">
-          <button class="btn danger" onclick="rejectCustomer()">ยกเลิก</button>
+          <button class="btn mint" onclick="spawnCustomer('sell')" ${canBuyIn?'':'disabled'}>ลูกค้ามาขายเครื่อง</button>
+          <button class="btn" onclick="spawnCustomer('buy')" ${canSellOut ? '' : 'disabled'}>ลูกค้ามาซื้อเครื่อง</button>
+        </div>
+        ${!canBuyIn ? '<p style="font-size:11px; color:var(--coral); margin-top:6px;">* สต็อกเต็ม ('+state.inventory.length+'/'+cap+') — ขายเครื่องออกหรืออัปเกรดพื้นที่ร้านก่อนรับซื้อเพิ่ม</p>' : ''}
+        ${!canSellOut ? '<p style="font-size:11px; color:var(--steel); margin-top:6px;">* ต้องซ่อมและ "ตั้งขาย" เครื่องอย่างน้อย 1 เครื่องในแท็บคลังสินค้าก่อน ลูกค้าถึงจะมาซื้อได้</p>' : ''}
+      </div>`;
+    return;
+  }
+
+  // Customer present: a small tappable teaser sits in the scene itself
+  // (spec #7 — Scene + Portrait + Dialogue, no walking/animation). Tapping
+  // it opens the full negotiation Detail Panel as a bottom sheet.
+  const c = state.customer;
+  const modeBadge = c.mode==='sell' ? '<span class="badge mode-sell">SELL-IN</span>' : '<span class="badge mode-buy">SELL-OUT</span>';
+  const line = c.mode==='sell' ? '"เอามือถือมาขายค่ะ/ครับ"' : `"สนใจเครื่อง ${c.phone.brand} ${c.phone.model} ครับ/ค่ะ"`;
+  stageContent.innerHTML = `
+    <div class="customer-teaser" onclick="openCustomerSheet()">
+      <div class="avatar">${c.face}</div>
+      <div class="teaser-info">
+        <p class="cust-name">${c.name} ${modeBadge}</p>
+        <p class="cust-line">${line}</p>
+        <div class="cust-tags">
+          <span class="tag">${c.personality.icon} ${c.personality.name}</span>
+          <span class="tag mood">${MOOD_ICON[c.mood]} ${MOOD_LABEL[c.mood]}</span>
         </div>
       </div>
-    `;
+      <div class="teaser-tap-hint">แตะเพื่อคุย →</div>
+    </div>
+  `;
+
+  if(customerSheetOpen){
+    openSheet(buildNegotiationSheetHtml(c));
   }
 }
 
@@ -1164,7 +1230,10 @@ function renderStaffScreen(){
     <div class="card-list">
       ${state.employees.length===0 ? '<div class="empty-note">ยังไม่มีพนักงาน</div>' : state.employees.map(e=>`
         <div class="employee-row">
-          <span>👤 ${e.name} — เงินเดือน ${money(e.salary)} บ./วัน</span>
+          <div class="emp-id">
+            <div class="emp-avatar">👤</div>
+            <span>${e.name} — เงินเดือน ${money(e.salary)} บ./วัน</span>
+          </div>
           <button class="btn small danger" onclick="fireEmployee(${e.id})">ให้ออก</button>
         </div>
       `).join('')}
@@ -1269,7 +1338,6 @@ function renderScreenContent(){
 }
 function renderAll(){
   renderTopAndSidebar();
-  renderTabBar();
   renderScreenContent();
 }
 function render(){ renderAll(); } // alias kept for consistency across systems
@@ -1288,8 +1356,6 @@ function ensureInitialCustomer(){
 }
 
 function boot(){
-  renderTabBar();
-  document.getElementById('sidebarPanel').style.display = '';
   if(hasSaveGame()){
     openModal(`
       <h3>พบไฟล์เซฟ</h3>
