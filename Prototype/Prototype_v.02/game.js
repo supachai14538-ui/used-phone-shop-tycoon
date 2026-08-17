@@ -44,8 +44,6 @@ const LUCKY_SALE_CHANCE  = 0.10; // sell-side: customer rarely buys immediately 
 
 
 const OCCUPATIONS = ["นักศึกษา","พนักงานออฟฟิศ","ครู","เกษตรกร","เจ้าของกิจการ","ข้าราชการ","ฟรีแลนซ์","ไรเดอร์","ช่างซ่อม","เกษียณอายุ"];
-const CUSTOMER_FACES_SELL = ["🙍","🧔","👩","🧑‍🦱","👨‍🦳","👩‍🦰"];
-const CUSTOMER_FACES_BUY  = ["🧑","👩‍💼","👨‍💼","🧕","👴","👵"];
 const NAMES = ["คุณสมชาย","คุณมาลี","น้องเอิร์ธ","พี่ต้อม","คุณยายสมศรี","คุณเบนซ์","น้องมิ้นท์","ลุงประเสริฐ","พี่แนน","คุณวิชัย","น้องพลอย","คุณอารีย์"];
 
 // Repair catalogue per REPAIR_SYSTEM / DEVICE_BIBLE (visual damage states)
@@ -370,7 +368,7 @@ function spawnCustomer(mode){
       mode:'sell',
       name: pick(NAMES),
       occupation: pick(OCCUPATIONS),
-      face: pick(CUSTOMER_FACES_SELL),
+      appearance: generateCustomerAppearance(),
       personality,
       trust,
       mood:'neutral',
@@ -395,7 +393,7 @@ function spawnCustomer(mode){
       mode:'buy',
       name: pick(NAMES),
       occupation: pick(OCCUPATIONS),
-      face: pick(CUSTOMER_FACES_BUY),
+      appearance: generateCustomerAppearance(),
       personality,
       trust,
       mood:'neutral',
@@ -1042,7 +1040,7 @@ function renderShopScreen(){
   stageContent.innerHTML = `
     <div class="scene-bg placeholder-box" data-ph="ภาพฉากร้าน (illustrated shop scene)">
       <div class="customer-standing">
-        <div class="ph-face">${c.face}</div>
+        ${characterSpriteHTML(c.appearance)}
         <div class="speech-bubble">${c.name} ${modeLabel}</div>
       </div>
       <button class="counter-hotspot" onclick="goToCounter()">
@@ -1092,8 +1090,8 @@ function renderCounterScreen(){
       <div class="counter-layout">
         <button class="back-btn" onclick="setTab('shop')">←</button>
         <div class="counter-customer-row">
-          <div class="portrait-box placeholder-box" data-ph="ภาพลูกค้า">
-            <span class="ph-face-lg">${c.face}</span>
+          <div class="portrait-box">
+            ${characterSpriteHTML(c.appearance, 'char-sprite-lg')}
           </div>
           <div class="speech-bubble counter-bubble">${c.name} ${c.personality.icon} ต้องการขาย ${c.phone.brand} ${c.phone.model} ราคาที่อยากได้ <b>${money(c.askPrice)} บาท</b></div>
         </div>
@@ -1144,8 +1142,8 @@ function renderCounterScreen(){
       <div class="counter-layout">
         <button class="back-btn" onclick="setTab('shop')">←</button>
         <div class="counter-customer-row">
-          <div class="portrait-box placeholder-box" data-ph="ภาพลูกค้า">
-            <span class="ph-face-lg">${c.face}</span>
+          <div class="portrait-box">
+            ${characterSpriteHTML(c.appearance, 'char-sprite-lg')}
           </div>
           <div class="speech-bubble counter-bubble">${c.name} ${c.personality.icon} สนใจเครื่อง ${c.phone.brand} ${c.phone.model} ในตู้</div>
         </div>
