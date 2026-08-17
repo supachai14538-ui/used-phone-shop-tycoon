@@ -1,0 +1,317 @@
+:root{
+  /* Cozy palette — derived from Furniture/Environment/Character Bible
+     (warm wood, cream, olive green accent) and the Mega Cozy UI Pack assets */
+  --wood:        #A9713F;
+  --wood-dark:   #7A4A26;
+  --wood-line:   #7A4A26;
+  --cream:       #FBF1DC;
+  --cream-deep:  #F3E2BE;
+  --paper:       #FFFBF2;
+  --ink:         #4A3423;
+  --ink-soft:    #7A6650;
+  --green:       #6E9C4B;
+  --green-dark:  #4F7635;
+  --gold:        #D9A441;
+  --coral:       #C0503D;
+  --mint:        #4F9C7C;
+  --steel:       #8A7A66;
+  --shadow:      rgba(90, 60, 30, 0.28);
+  --app-bg-1:    #EFDCB8;
+  --app-bg-2:    #E4C99A;
+}
+
+*{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+html,body{ margin:0; padding:0; }
+body{
+  background: radial-gradient(ellipse at top, var(--app-bg-2), var(--app-bg-1));
+  font-family:'Noto Sans Thai', sans-serif;
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:18px 10px 40px;
+}
+.display{ font-family:'Baloo 2', 'Noto Sans Thai', sans-serif; }
+
+/* ============ MOBILE GAME FRAME ============ */
+.game-frame{
+  width:100%;
+  max-width:430px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* ============ TOP HUD ============ */
+.hud-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--cream);
+  border:3px solid var(--wood-dark);
+  border-radius:16px;
+  padding:8px 14px 8px 8px;
+  box-shadow:0 4px 0 var(--shadow);
+}
+.hud-avatar{
+  width:44px; height:44px; border-radius:50%;
+  border:2px solid var(--wood-dark);
+  object-fit:cover; background:var(--cream-deep);
+}
+.hud-mid{ flex:1; min-width:0; }
+.hud-shopname{
+  font-family:'Baloo 2'; font-weight:700; font-size:14px; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.hud-shopname span:first-child{ color:var(--gold); margin-right:4px; }
+.hud-stats{ display:flex; gap:10px; margin-top:2px; flex-wrap:wrap; }
+.hud-stat{ font-size:12px; font-weight:600; color:var(--ink-soft); }
+.hud-stat b{ color:var(--ink); font-weight:800; }
+
+/* ============ SCENE AREA ============ */
+.scene-wrap{ position:relative; min-height:520px; }
+.panel.screen{
+  display:none;
+  background:var(--cream);
+  border:3px solid var(--wood-dark);
+  border-radius:18px;
+  box-shadow:0 5px 0 var(--shadow);
+  padding:14px;
+  min-height:520px;
+  position:relative;
+}
+.panel.screen.active{ display:block; }
+.panel-title{
+  font-family:'Baloo 2'; font-weight:700; font-size:16px; color:var(--wood-dark);
+  margin:2px 0 12px 0;
+}
+
+/* Placeholder = no real asset yet. Dashed border + small corner label. */
+.placeholder-box{
+  border:2px dashed var(--steel);
+  border-radius:14px;
+  background:repeating-linear-gradient(135deg, var(--cream-deep), var(--cream-deep) 10px, var(--paper) 10px, var(--paper) 20px);
+  position:relative;
+}
+.placeholder-box::before{
+  content: attr(data-ph);
+  position:absolute; top:6px; left:8px;
+  font-size:9px; font-weight:700; color:var(--steel);
+  background:var(--paper); padding:1px 6px; border-radius:6px;
+  border:1px solid var(--steel);
+  z-index:2;
+}
+.placeholder-btn{ opacity:0.55; border-style:dashed !important; }
+
+/* Shop scene (idle + customer teaser) */
+.scene-bg{ min-height:460px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center; }
+.no-customer{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.ph-emoji{ font-size:44px; }
+.ph-note{ font-size:11px; color:var(--steel); margin:2px 0 0 0; }
+.customer-standing{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:24px; }
+
+/* Layered customer character sprite (real assets, stacked absolutely —
+   every layer image shares the same 444x700 canvas so no per-layer offset
+   is needed). Default size is for the shop-scene customer; .char-sprite-lg
+   is the smaller variant used in the counter-screen portrait box. */
+.char-sprite{ position:relative; width:168px; aspect-ratio:444/700; }
+.char-sprite .char-layer{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; }
+.char-sprite-lg{ width:100%; }
+.speech-bubble{
+  background:var(--paper); border:2px solid var(--wood); border-radius:14px;
+  padding:8px 14px; font-size:13px; font-weight:600; max-width:280px;
+  box-shadow:0 3px 0 var(--shadow);
+}
+.counter-hotspot{
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:8px;
+  background:var(--green); color:#fff; border:none; border-radius:999px;
+  padding:10px 20px; font-family:'Baloo 2'; font-weight:700; font-size:14px;
+  cursor:pointer; box-shadow:0 4px 0 var(--green-dark);
+}
+.counter-hotspot:active{ transform:translateX(-50%) translateY(3px); box-shadow:0 1px 0 var(--green-dark); }
+.counter-hotspot-icon{ font-size:16px; }
+
+/* ============ SIDE QUICK ACTION ============ */
+/* Anchored to the bottom of the scene (not a hard-coded "top"), so it stays
+   clear of the customer character area and holds its position regardless
+   of viewport height. Sits above the counter hotspot button. */
+.side-quick{
+  position:absolute; right:-8px; bottom:64px;
+  display:flex; flex-direction:column; gap:10px; z-index:5;
+}
+.quick-btn{
+  width:56px; display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:var(--wood); border:2px solid var(--wood-dark); border-radius:12px;
+  padding:6px 4px; cursor:pointer; box-shadow:0 3px 0 var(--shadow);
+}
+.quick-icon{ font-size:18px; }
+.quick-label{ font-size:9px; font-weight:700; color:#fff; }
+.quick-btn.disabled, .quick-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+/* ============ BOTTOM NAV ============ */
+.tabbar{
+  display:flex; gap:6px; align-items:center;
+  background:var(--cream); border:3px solid var(--wood-dark); border-radius:18px;
+  padding:8px; box-shadow:0 4px 0 var(--shadow);
+}
+.navbtn{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:transparent; border:none; border-radius:12px; padding:6px 2px;
+  cursor:pointer; color:var(--ink-soft);
+}
+.navbtn.active{ background:var(--green); color:#fff; box-shadow:0 3px 0 var(--green-dark); }
+.navbtn-icon{ font-size:18px; }
+.navbtn-label{ font-size:10px; font-weight:700; }
+
+/* ============ COUNTER / NEGOTIATION SCREEN ============ */
+.back-btn{
+  background:var(--wood); color:#fff; border:2px solid var(--wood-dark);
+  border-radius:10px; width:34px; height:34px; font-size:16px; font-weight:800;
+  cursor:pointer; margin-bottom:8px;
+}
+.counter-layout{ display:flex; flex-direction:column; gap:10px; }
+.counter-customer-row{ display:flex; align-items:center; gap:10px; }
+.portrait-box{ width:60px; aspect-ratio:444/700; flex:none; display:flex; align-items:flex-start; justify-content:center; }
+.counter-bubble{ flex:1; font-size:12px; }
+
+.satisfaction-row{ display:flex; align-items:center; gap:10px; }
+.satisfaction-meter{ flex:1; display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--ink-soft); }
+.meter-track{ flex:1; height:10px; background:var(--cream-deep); border:1px solid var(--wood); border-radius:999px; overflow:hidden; }
+.meter-fill{ height:100%; background:var(--green); border-radius:999px; transition:width .25s ease; }
+.trust-chip{ font-size:11px; font-weight:700; background:var(--paper); border:1px solid var(--wood); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+
+.device-card, .offer-card{
+  background:var(--paper); border:2px solid var(--wood); border-radius:14px; padding:10px 12px;
+}
+.device-card-head{ font-family:'Baloo 2'; font-weight:700; font-size:13px; color:var(--wood-dark); margin-bottom:4px; }
+.device-row{ display:flex; justify-content:space-between; font-size:12px; padding:2px 0; }
+.device-row span:first-child{ color:var(--ink-soft); }
+.device-row span:last-child{ font-weight:700; }
+
+.offer-label{
+  background:var(--green); color:#fff; font-weight:700; font-size:12px;
+  text-align:center; border-radius:8px; padding:4px; margin-bottom:6px;
+}
+.offer-amount{
+  display:flex; align-items:center; justify-content:center; gap:4px;
+  font-family:'Baloo 2'; font-weight:800; font-size:26px; color:var(--wood-dark); margin-bottom:8px;
+}
+.offer-amount input{
+  width:150px; text-align:center; font-family:'Baloo 2'; font-weight:800; font-size:26px;
+  color:var(--wood-dark); border:none; background:transparent; outline:none;
+  border-bottom:2px dashed var(--wood);
+}
+.stepper-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:8px; }
+.step-btn{
+  background:var(--cream-deep); border:2px solid var(--wood); border-radius:10px;
+  padding:6px 2px; font-weight:700; font-size:12px; color:var(--coral); cursor:pointer;
+}
+.step-btn.plus{ color:var(--green-dark); }
+.step-btn:active{ transform:translateY(2px); }
+
+.counter-action-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.counter-empty{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:60px 0; }
+
+/* ============ SHARED BUTTONS ============ */
+.btn{
+  font-family:'Noto Sans Thai'; font-weight:700; font-size:12.5px;
+  border:2px solid var(--wood-dark); border-radius:10px; padding:9px 12px;
+  cursor:pointer; background:var(--cream-deep); color:var(--ink);
+  box-shadow:0 3px 0 var(--shadow);
+}
+.btn:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--shadow); }
+.btn:disabled{ opacity:0.45; cursor:not-allowed; }
+.btn.mint{ background:var(--green); border-color:var(--green-dark); color:#fff; box-shadow:0 3px 0 var(--green-dark); }
+.btn.secondary{ background:var(--paper); }
+.btn.danger{ background:var(--coral); border-color:#8C3324; color:#fff; box-shadow:0 3px 0 #8C3324; }
+.btn.small{ font-size:11px; padding:6px 9px; }
+.btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
+
+/* ============ INVENTORY / GENERIC CARD SCREENS ============ */
+.filter-row{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.filter-select{
+  font-family:'Noto Sans Thai'; font-size:12px; border:2px solid var(--wood); border-radius:8px;
+  padding:5px 8px; background:var(--paper); color:var(--ink);
+}
+.card-list{ display:flex; flex-direction:column; gap:8px; }
+.item-card, .upgrade-card, .employee-row{
+  background:var(--paper); border:2px solid var(--wood); border-radius:12px; padding:10px 12px;
+}
+.employee-row{ display:flex; align-items:center; justify-content:space-between; font-size:12px; }
+.item-card-head{ display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; margin-bottom:6px; }
+.tag{
+  font-size:10.5px; font-weight:700; background:var(--cream-deep); border:1px solid var(--wood);
+  border-radius:999px; padding:2px 8px; margin-left:4px;
+}
+.cond-ok{ color:var(--green-dark); }
+.cond-mid{ color:var(--gold); }
+.cond-low{ color:var(--coral); }
+.empty-note{ font-size:12px; color:var(--steel); text-align:center; padding:20px 0; }
+.defect-list{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; }
+.defect-chip{ font-size:10.5px; background:#F5DCC9; border:1px solid var(--coral); color:var(--coral); border-radius:999px; padding:2px 8px; }
+.defect-chip.ok{ background:#E1EEDA; border-color:var(--green-dark); color:var(--green-dark); }
+.cust-line{ font-size:12px; margin:4px 0; color:var(--ink-soft); }
+
+/* Upgrades */
+.grid2{ display:grid; grid-template-columns:1fr; gap:10px; }
+.lvl-pip{ width:16px; height:8px; border-radius:4px; background:var(--cream-deep); border:1px solid var(--wood); display:inline-block; margin-right:3px; }
+.lvl-pip.filled{ background:var(--gold); }
+.upgrade-level-track{ margin:6px 0; }
+
+/* Menu screen — status card */
+.status-card{ background:var(--paper); border:2px solid var(--wood); border-radius:12px; padding:12px; margin-bottom:12px; }
+.status-card-title{ font-family:'Baloo 2'; font-size:13px; font-weight:700; color:var(--wood-dark); margin:0 0 8px 0; }
+.stats-grid{ display:flex; flex-direction:column; gap:4px; }
+.stat-row{ display:flex; justify-content:space-between; font-size:12px; }
+.stat-label{ color:var(--ink-soft); }
+.stat-val{ font-weight:700; }
+.cash-val{ color:var(--gold); }
+.rep-block{ margin-top:8px; }
+.rep-bar-track{ height:10px; background:var(--cream-deep); border:1px solid var(--wood); border-radius:999px; overflow:hidden; margin:4px 0; }
+.rep-bar-fill{ height:100%; background:var(--gold); }
+.rep-level-label{ font-size:11px; color:var(--ink-soft); }
+.inv-list{ max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+.inv-item{ display:flex; justify-content:space-between; font-size:11.5px; padding:3px 0; border-bottom:1px dashed var(--cream-deep); }
+.menu-links{ display:flex; flex-direction:column; gap:8px; }
+.menu-link{
+  text-align:left; background:var(--paper); border:2px solid var(--wood); border-radius:10px;
+  padding:10px 12px; font-size:13px; font-weight:700; color:var(--ink); cursor:pointer;
+}
+
+/* Reports table */
+.report-table{ width:100%; border-collapse:collapse; font-size:11px; }
+.report-table th, .report-table td{ border:1px solid var(--wood); padding:5px 6px; text-align:center; }
+.report-table th{ background:var(--cream-deep); }
+
+/* Settings */
+.settings-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed var(--wood); font-size:12px; }
+.settings-row small{ color:var(--steel); font-size:10.5px; }
+
+/* ============ MODALS / TOASTS ============ */
+.modal-overlay, .receipt-overlay{
+  position:fixed; inset:0; background:rgba(74,52,35,0.55); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px;
+}
+.modal-box, .receipt{
+  background:var(--paper); border:3px solid var(--wood-dark); border-radius:16px; padding:18px;
+  max-width:340px; width:100%; box-shadow:0 6px 0 var(--shadow);
+}
+.receipt-row{ display:flex; justify-content:space-between; font-size:12px; padding:3px 0; }
+.receipt-row.total{ font-weight:800; font-size:13.5px; }
+.receipt-row.total.profit{ color:var(--green-dark); }
+.receipt-row.total.loss{ color:var(--coral); }
+.receipt-close{ width:100%; margin-top:10px; }
+
+.day-toast, .event-toast{
+  position:fixed; left:50%; bottom:100px; transform:translateX(-50%);
+  background:var(--wood-dark); color:#fff; font-size:12px; font-weight:700;
+  padding:10px 16px; border-radius:999px; z-index:60; box-shadow:0 4px 0 var(--shadow);
+}
+.event-toast{ bottom:150px; background:var(--gold); color:var(--ink); }
+
+.footer-note{ font-size:9.5px; color:var(--ink-soft); text-align:center; margin-top:4px; opacity:0.8; }
+
+@media (max-width:400px){
+  .side-quick{ right:-4px; }
+  .quick-btn{ width:48px; }
+}

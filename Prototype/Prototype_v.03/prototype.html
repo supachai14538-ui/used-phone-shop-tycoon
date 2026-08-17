@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ร้านมือถือป้าแดง — Used Phone Shop Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game-frame">
+
+  <!-- ============ TOP HUD (always visible) ============ -->
+  <div class="hud-bar">
+    <img class="hud-avatar" src="assets/characters/nat_portrait.png" alt="">
+    <div class="hud-mid">
+      <div class="hud-shopname"><span id="tsLv">Lv.1</span> <span id="tsShopName">ร้านมือถือป้าแดง</span></div>
+      <div class="hud-stats">
+        <span class="hud-stat">💰 <b id="tsCash">2,000</b></span>
+        <span class="hud-stat">⭐ <b id="tsRep">50</b></span>
+        <span class="hud-stat">📅 Day <b id="tsDay">1</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCENE AREA (screens swap here) ============ -->
+  <div class="scene-wrap">
+
+    <div class="panel screen active" id="screen-shop">
+      <div id="stageContent"></div>
+    </div>
+
+    <div class="panel screen" id="screen-counter">
+      <div id="counterScreenContent"></div>
+    </div>
+
+    <div class="panel screen" id="screen-inventory">
+      <h2 class="panel-title">คลังสินค้า</h2>
+      <div id="inventoryScreenContent"></div>
+    </div>
+
+    <div class="panel screen" id="screen-upgrades">
+      <h2 class="panel-title">จัดการ / อัปเกรดร้าน</h2>
+      <div id="upgradesScreenContent"></div>
+    </div>
+
+    <div class="panel screen" id="screen-staff">
+      <h2 class="panel-title">พนักงาน</h2>
+      <div id="staffScreenContent"></div>
+    </div>
+
+    <!-- "เมนู" screen: shop status card (static — updated every render regardless
+         of active tab) + links to the reports/settings sub-screens -->
+    <div class="panel screen" id="screen-menu">
+      <h2 class="panel-title">เมนู</h2>
+
+      <div class="status-card">
+        <h3 class="status-card-title">สถานะร้านวันนี้</h3>
+        <div class="stats-grid">
+          <div class="stat-row"><span class="stat-label">วันที่</span><span class="stat-val" id="dayVal">1</span></div>
+          <div class="stat-row"><span class="stat-label">เงินสด</span><span class="stat-val cash-val" id="cashVal">2,000</span></div>
+          <div class="stat-row"><span class="stat-label">รายรับวันนี้</span><span class="stat-val" id="revVal">0</span></div>
+          <div class="stat-row"><span class="stat-label">รายจ่ายวันนี้</span><span class="stat-val" id="expVal">0</span></div>
+          <div class="stat-row"><span class="stat-label">กำไรวันนี้</span><span class="stat-val" id="profitVal">0</span></div>
+        </div>
+        <div class="rep-block">
+          <span class="stat-label">ชื่อเสียงร้าน</span>
+          <div class="rep-bar-track"><div class="rep-bar-fill" id="repBar" style="width:50%"></div></div>
+          <div class="rep-level-label" id="repLevelLabel">ปานกลาง (50/100)</div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <h3 class="status-card-title">คลังมือถือ (<span id="invCount">0</span>/<span id="invCap">8</span>)</h3>
+        <div class="inv-list" id="invList"><div class="empty-note">ยังไม่มีเครื่องในสต็อก</div></div>
+      </div>
+
+      <button class="btn secondary" id="nextDayBtn" style="width:100%; margin-bottom:14px;">จบวัน / วันถัดไป →</button>
+
+      <div class="menu-links">
+        <button class="menu-link" onclick="setTab('reports')">📊 รายงานกิจการ</button>
+        <button class="menu-link" onclick="setTab('settings')">⚙️ ตั้งค่า / บันทึกเกม</button>
+      </div>
+    </div>
+
+    <div class="panel screen" id="screen-reports">
+      <button class="back-btn" onclick="setTab('menu')">←</button>
+      <h2 class="panel-title">รายงานกิจการ</h2>
+      <div id="reportsScreenContent"></div>
+    </div>
+
+    <div class="panel screen" id="screen-settings">
+      <button class="back-btn" onclick="setTab('menu')">←</button>
+      <h2 class="panel-title">ตั้งค่า / บันทึกเกม</h2>
+      <div id="settingsScreenContent"></div>
+    </div>
+
+    <!-- Side quick action menu — only shown while on the shop screen -->
+    <div class="side-quick" id="sideQuick">
+      <button class="quick-btn" onclick="setTab('inventory')">
+        <span class="quick-icon">📱</span><span class="quick-label">สินค้า</span>
+      </button>
+      <button class="quick-btn disabled" disabled title="ยังไม่เปิดใช้งาน">
+        <span class="quick-icon">👥</span><span class="quick-label">ลูกค้า</span>
+      </button>
+      <button class="quick-btn disabled" disabled title="ยังไม่เปิดใช้งาน">
+        <span class="quick-icon">🔔</span><span class="quick-label">เหตุการณ์</span>
+      </button>
+      <button class="quick-btn disabled" disabled title="ยังไม่เปิดใช้งาน">
+        <span class="quick-icon">📋</span><span class="quick-label">เควสต์</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ============ BOTTOM NAVIGATION (always visible) ============ -->
+  <div class="tabbar" id="tabBar"></div>
+
+  <div class="footer-note">Gameplay Prototype v.03 — Cozy UI refactor: ระบบทั้งหมดทำงานจริงเหมือนเดิม (ลูกค้า/ต่อรอง/ซื้อ/ตรวจสภาพ/ซ่อม/สต็อก/ตั้งราคาขาย/ชื่อเสียง/เศรษฐกิจ/อัปเกรดร้าน/พนักงาน/เซฟเกม/เหตุการณ์สุ่มรายวัน) — กรอบเส้นประ = จุดที่ยังรอ asset จริง</div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script src="customer-appearance.js"></script>
+<script src="character-renderer.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
