@@ -116,6 +116,14 @@ body{
    is the smaller variant used in the counter-screen portrait box. */
 .char-sprite{ position:relative; width:168px; aspect-ratio:444/700; }
 .char-sprite .char-layer{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none; }
+/* Tinted layers (hair/clothing recolor via CSS mask — see character-renderer.js):
+   the element itself supplies flat background-color, mask-image supplies the
+   shape from the source PNG's alpha channel. Source PNGs are never modified. */
+.char-sprite .char-layer-tint{
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-size:contain; mask-size:contain;
+  -webkit-mask-position:center; mask-position:center;
+}
 .char-sprite-lg{ width:100%; }
 .speech-bubble{
   background:var(--paper); border:2px solid var(--wood); border-radius:14px;
